@@ -19,6 +19,7 @@
   when: bootstraping is defined
 
 - name: Installing packages to access https repository
+  become: yes
   apt:
     name:
       - apt-transport-https
@@ -27,28 +28,35 @@
       - software-properties-common
     state: present
     update_cache: yes
-  become: yes
 
 - name: Adding docker key
+  become: yes
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     id: 0EBFCD88
     state: present
-  become: yes
 
 - name: Adding docker repository
+  become: yes
   apt_repository:
     repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
-  become: yes
 
 - name: Installing docker
+  become: yes
   apt:
     name: docker-ce
     state: present
     force: yes
     update_cache: yes
-  become: yes
+  notify:
+  - reload docker
+  - restart docker
+
+- name: Starting docker service
+  service:
+    name: docker
+    state: started
 
 - name: Adding existing users to group docker
   user:
